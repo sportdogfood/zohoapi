@@ -2,53 +2,36 @@ const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
 
+let zohoRefreshToken = '1000.643f6fe53deb2882d71464cb6ef6e194.d794ad0786ae77082182e4e289d6b58c'; // Replace with your Zoho refresh token
+let zohoAccessToken = '1000.3f4286f9f3ccf81824700c329d56dbe0.ec1de5ec479aa6a1963c00347a60c059'; // Store the access token here
 
-
-
-// Store Zoho tokens in memory (or move to a secure storage)
-let zohoAccessToken = '1000.53adb3a59dcb658e516d081475fadca6.57cd2d35ebea92ca00820085c8acb24d';
-let zohoRefreshToken = '1000.7ac9080bdb21fedbf36fea05fbec209d.e92430a6a66580fdea97f0747da50d1d';
-
-// Middleware to parse JSON bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Middleware to add CORS headers
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
+app.use(express.json()); // Middleware to parse JSON bodies
 
 // ------------------------------------------------------
-//  Zoho CRM API Section
-// ------------------------------------------------------
-
-// Function to refresh the Zoho CRM access token
+// Function to refresh the Zoho access token
 async function refreshZohoToken() {
+  const refreshUrl = 'https://accounts.zoho.com/oauth/v2/token';
+
   try {
-    const refreshResponse = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+    const response = await fetch(refreshUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
-        refresh_token: zohoRefreshToken,  // Using stored refresh token
-        client_id: '1000.3VZRY3CC9QGZBXA8IZZ6TWZTZV1H6H',  // Your Zoho client ID
-        client_secret: '48dcd0b587246976e9dfcfcc54b10bfb211686cbe4',  // Your Zoho client secret
-      }),
+        refresh_token: zohoRefreshToken, // Use stored refresh token
+        client_id: '1000.3VZRY3CC9QGZBXA8IZZ6TWZTZV1H6H', // Replace with your Zoho client ID
+        client_secret: '48dcd0b587246976e9dfcfcc54b10bfb211686cbe4' // Replace with your Zoho client secret
+      })
     });
 
-    const tokenData = await refreshResponse.json();
-    
-    // Check if the access token was successfully received
-    if (tokenData.access_token) {
-      console.log('Zoho access token refreshed:', tokenData.access_token);
-      zohoAccessToken = tokenData.access_token;  // Update the access token in memory
+    const data = await response.json();
+
+    if (data.access_token) {
+      zohoAccessToken = data.access_token;
+      console.log('Zoho Access Token Refreshed:', zohoAccessToken);
       return zohoAccessToken;
     } else {
-      console.error('Error refreshing Zoho token:', tokenData);
-      throw new Error('Failed to refresh Zoho access token');
+      throw new Error('Failed to refresh Zoho token');
     }
   } catch (error) {
     console.error('Error refreshing Zoho access token:', error);
@@ -56,56 +39,52 @@ async function refreshZohoToken() {
   }
 }
 
-// Zoho CRM API route that uses the token
-app.all('/zoho/:endpoint*', async (req, res) => {
+// ------------------------------------------------------
+// Refresh token route
+app.post('/zoho/token/refresh', async (req, res) => {
   try {
-    // Check if access token is available, otherwise refresh it
-    const accessToken = zohoAccessToken || await refreshZohoToken(); 
-    const endpoint = req.params.endpoint + (req.params[0] || '');  // Support dynamic subpaths
-    const apiUrl = `https://www.zohoapis.com/crm/v2/${endpoint}`;  // Zoho CRM API base URL
-
-    console.log(`Forwarding request to: ${apiUrl}`);  // Log the full API URL
-
-    // Send request to Zoho CRM API
-    const apiResponse = await fetch(apiUrl, {
-      method: req.method,
-      headers: {
-        'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'Content-Type': req.get('Content-Type') || 'application/json',
-      },
-      body: ['POST', 'PUT'].includes(req.method) ? JSON.stringify(req.body) : undefined,
-    });
-
-    // If the API response indicates an expired token, refresh the token
-    if (apiResponse.status === 401) {
-      console.log('Access token expired. Refreshing token...');
-      await refreshZohoToken();  // Refresh the token
-      return res.redirect(req.originalUrl);  // Retry the request after refreshing
-    }
-
-    const data = await apiResponse.json();
-
-    if (!apiResponse.ok) {
-      const errorText = await apiResponse.text();
-      console.log(`Zoho API response status: ${apiResponse.status}, body: ${errorText}`);
-      throw new Error(`API request failed with status ${apiResponse.status}`);
-    }
-
-    // Return Zoho CRM API response to the client
-    console.log("Zoho CRM API response data:", data);
-    res.json(data); 
+    const token = await refreshZohoToken();
+    res.json({ access_token: token });
   } catch (error) {
-    console.error("Error in Zoho CRM API proxy route:", error);
-    res.status(500).json({ error: 'Error fetching data from Zoho CRM API' });
+    res.status(500).json({ error: 'Failed to refresh Zoho token' });
   }
 });
 
 // ------------------------------------------------------
-//  Server Initialization
-// ------------------------------------------------------
+// Proxy route to Zoho API
+app.all('/zoho/:endpoint*', async (req, res) => {
+  const endpoint = req.params.endpoint;
+  const apiUrl = `https://www.zohoapis.com/crm/v2/${endpoint}`;
 
-// Start the server on the port specified by Heroku or on 3000 locally
+  try {
+    const response = await fetch(apiUrl, {
+      method: req.method,
+      headers: {
+        'Authorization': `Zoho-oauthtoken ${zohoAccessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: req.method === 'POST' || req.method === 'PUT' ? JSON.stringify(req.body) : undefined
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.log('Token expired, refreshing...');
+        await refreshZohoToken();
+        return res.status(401).json({ error: 'Access token expired. Please refresh.' });
+      }
+      throw new Error(`Zoho API Error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching from Zoho API' });
+  }
+});
+
+// ------------------------------------------------------
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log('Server running on port', PORT);
 });
