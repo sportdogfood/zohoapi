@@ -1,11 +1,15 @@
 const express = require('express');
 const fetch = require('node-fetch');
+const cors = require('cors'); // Import the CORS package
 const app = express();
 
 let zohoAccessToken = '';
 let zohoRefreshToken = process.env.ZOHO_REFRESH_TOKEN; // Stored in Heroku environment
 let clientId = process.env.ZOHO_CLIENT_ID;
 let clientSecret = process.env.ZOHO_CLIENT_SECRET;
+
+// Middleware to enable CORS for all requests
+app.use(cors()); // This will allow all origins by default
 
 // Middleware to parse JSON bodies
 app.use(express.json());
