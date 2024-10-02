@@ -43,7 +43,8 @@ async function refreshZohoToken() {
 
 // Zoho CRM API proxy route with token handling
 app.get('/zoho/Contacts/search', async (req, res) => {
-  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?${req.query.criteria}`;
+  const criteria = req.query.criteria || '';  // Fetch the criteria from query parameters
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?criteria=${criteria}`;
 
   try {
     // Make Zoho API request using the access token
@@ -69,6 +70,7 @@ app.get('/zoho/Contacts/search', async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
+    console.error("Error fetching Zoho data:", error);
     res.status(500).json({ error: 'Error fetching Zoho data' });
   }
 });
