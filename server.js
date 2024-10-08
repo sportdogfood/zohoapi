@@ -45,11 +45,8 @@ async function refreshZohoToken() {
   }
 }
 
-// Zoho CRM API proxy route with token handling
-app.get('/zoho/Contacts/search', async (req, res) => {
-  const criteria = req.query.criteria || '';  // Fetch the criteria from query parameters
-  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?criteria=${criteria}`;
-
+// Helper function to handle Zoho API requests and token refresh
+async function handleZohoApiRequest(apiUrl, res) {
   try {
     // Make Zoho API request using the access token
     let response = await fetch(apiUrl, {
@@ -60,7 +57,7 @@ app.get('/zoho/Contacts/search', async (req, res) => {
     if (response.status === 401) {
       console.log('Access token expired, refreshing...');
       await refreshZohoToken();
-      
+
       // Retry the Zoho API request with the new token
       response = await fetch(apiUrl, {
         headers: { 'Authorization': `Zoho-oauthtoken ${zohoAccessToken}` }
@@ -77,6 +74,50 @@ app.get('/zoho/Contacts/search', async (req, res) => {
     console.error("Error fetching Zoho data:", error);
     res.status(500).json({ error: 'Error fetching Zoho data' });
   }
+}
+
+// Zoho CRM API proxy routes for different modules
+
+// Contacts module
+app.get('/zoho/Contacts/search', async (req, res) => {
+  const criteria = req.query.criteria || '';  // Fetch the criteria from query parameters
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
+
+// CustomModule47 - Dashboard
+app.get('/zoho/Dashboard/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://www.zohoapis.com/crm/v2/CustomModule47/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
+
+// CustomModule2 - Subscriptions
+app.get('/zoho/Subscriptions/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://www.zohoapis.com/crm/v2/CustomModule2/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
+
+// CustomModule1 - Transactions
+app.get('/zoho/Transactions/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://www.zohoapis.com/crm/v2/CustomModule1/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
+
+// Accounts module
+app.get('/zoho/Accounts/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
+
+// Zoho Desk module
+app.get('/zoho/Desk/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://desk.zoho.com/api/v1/tickets/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
 });
 
 // Start the server
