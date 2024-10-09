@@ -85,10 +85,10 @@ app.get('/zoho/Contacts/search', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res);
 });
 
-// CustomModule47 - Dashboard
+// Member - Dashboard
 app.get('/zoho/Dashboard/search', async (req, res) => {
   const criteria = req.query.criteria || '';
-  const apiUrl = `https://www.zohoapis.com/crm/v2/CustomModule47/search?criteria=${criteria}`;
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Member/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
 
