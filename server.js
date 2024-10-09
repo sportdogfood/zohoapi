@@ -88,21 +88,21 @@ app.get('/zoho/Contacts/search', async (req, res) => {
 // Member - Dashboard
 app.get('/zoho/Dashboard/search', async (req, res) => {
   const criteria = req.query.criteria || '';
-  const apiUrl = `https://www.zohoapis.com/crm/v2/Member/search?criteria=${criteria}`;
+  const apiUrl = `https://www.zohoapis.com/crm/v7/Member/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
 
 // CustomModule2 - Subscriptions
 app.get('/zoho/Subscriptions/search', async (req, res) => {
   const criteria = req.query.criteria || '';
-  const apiUrl = `https://www.zohoapis.com/crm/v2/CustomModule2/search?criteria=${criteria}`;
+  const apiUrl = `https://www.zohoapis.com/crm/v7/CustomModule2/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
 
 // CustomModule1 - Transactions
 app.get('/zoho/Transactions/search', async (req, res) => {
   const criteria = req.query.criteria || '';
-  const apiUrl = `https://www.zohoapis.com/crm/v2/CustomModule1/search?criteria=${criteria}`;
+  const apiUrl = `https://www.zohoapis.com/crm/v7/Transactions/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
 
