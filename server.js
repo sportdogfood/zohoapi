@@ -65,6 +65,8 @@ async function handleZohoApiRequest(apiUrl, res) {
     }
 
     if (!response.ok) {
+      const errorResponse = await response.json();
+      console.error(`Zoho API Error: ${response.statusText}`, errorResponse);
       throw new Error(`Zoho API Error: ${response.statusText}`);
     }
 
@@ -75,6 +77,7 @@ async function handleZohoApiRequest(apiUrl, res) {
     res.status(500).json({ error: 'Error fetching Zoho data' });
   }
 }
+
 
 // Zoho CRM API proxy routes for different modules
 
