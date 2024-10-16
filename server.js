@@ -88,6 +88,17 @@ app.get('/zoho/Contacts/search', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res);
 });
 
+// Update Contact in Contacts module
+app.patch('/zoho/Contacts/:contactId', async (req, res) => {
+  const contactId = req.params.contactId; // Fetch the contact ID from the request parameters
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${contactId}`;
+  const updateData = req.body; // Fetch the update data from the request body
+
+  // Pass updateData as the body of the PATCH request
+  await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
+});
+
+
 // Member - Dashboard
 app.get('/zoho/Member/search', async (req, res) => {
   const criteria = req.query.criteria || '';
