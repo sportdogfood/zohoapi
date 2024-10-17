@@ -98,6 +98,26 @@ app.patch('/zoho/Contacts/:contactId', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
 });
 
+// Update Contact in Contacts module using crmRecid
+app.patch('/zoho/Contacts/:crmRecid', async (req, res) => {
+  const crmRecid = req.params.crmRecid; // Fetch the crmRecid from the request parameters
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
+  const updateData = req.body; // Fetch the update data from the request body
+
+  // Pass updateData as the body of the PATCH request
+  await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
+});
+
+// Get Contact in Contacts module using crmRecid
+app.get('/zoho/Contacts/:crmRecid', async (req, res) => {
+  const crmRecid = req.params.crmRecid; // Fetch the crmRecid from the request parameters
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
+
+  // Make GET request to fetch contact data
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+
 
 // Member - Dashboard
 app.get('/zoho/Member/search', async (req, res) => {
