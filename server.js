@@ -117,7 +117,12 @@ app.get('/zoho/Contacts/:crmRecid', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
-
+// Member - Dashboard
+app.get('/zoho/Member/:mid', async (req, res) => {
+  const crmRecid = req.params.mid;
+  const apiUrl = `https://www.zohoapis.com/crm/v7/Member/${mid}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
 
 // Member - Dashboard
 app.get('/zoho/Member/search', async (req, res) => {
@@ -125,6 +130,8 @@ app.get('/zoho/Member/search', async (req, res) => {
   const apiUrl = `https://www.zohoapis.com/crm/v7/Member/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
+
+
 
 // Dashboard - Dashboard
 app.get('/zoho/Dashboard/search', async (req, res) => {
