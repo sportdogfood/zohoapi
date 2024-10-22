@@ -1,23 +1,15 @@
-// server.js
 const express = require('express');
 const fetch = require('node-fetch');
-const cors = require('cors');
+const cors = require('cors'); // Import the CORS package
 const app = express();
 
 let zohoAccessToken = '';
-let zohoRefreshToken = process.env.ZOHO_REFRESH_TOKEN;
+let zohoRefreshToken = process.env.ZOHO_REFRESH_TOKEN; // Stored in Heroku environment
 let clientId = process.env.ZOHO_CLIENT_ID;
 let clientSecret = process.env.ZOHO_CLIENT_SECRET;
 
 // Middleware to enable CORS for all requests
-app.use(cors({
-  origin: '*', // Specify specific origins in production
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Handle preflight requests
-app.options('*', cors());
+app.use(cors()); // This will allow all origins by default
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -54,26 +46,22 @@ async function refreshZohoToken() {
 }
 
 // Helper function to handle Zoho API requests and token refresh
-async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
+async function handleZohoApiRequest(apiUrl, res) {
   try {
-    const options = {
-      method,
-      headers: { 
-        'Authorization': `Zoho-oauthtoken ${zohoAccessToken}`,
-        'Content-Type': 'application/json'
-      }
-    };
-    if (body) {
-      options.body = JSON.stringify(body);
-    }
+    // Make Zoho API request using the access token
+    let response = await fetch(apiUrl, {
+      headers: { 'Authorization': `Zoho-oauthtoken ${zohoAccessToken}` }
+    });
 
-    let response = await fetch(apiUrl, options);
-
+    // If the token is expired (401), refresh it and retry the request
     if (response.status === 401) {
       console.log('Access token expired, refreshing...');
       await refreshZohoToken();
-      options.headers['Authorization'] = `Zoho-oauthtoken ${zohoAccessToken}`;
-      response = await fetch(apiUrl, options);
+
+      // Retry the Zoho API request with the new token
+      response = await fetch(apiUrl, {
+        headers: { 'Authorization': `Zoho-oauthtoken ${zohoAccessToken}` }
+      });
     }
 
     if (!response.ok) {
@@ -90,46 +78,67 @@ async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
   }
 }
 
-// Example Route Corrections
 
-// Contacts module - Search
+// Zoho CRM API proxy routes for different modules
+
+// Contacts module
 app.get('/zoho/Contacts/search', async (req, res) => {
-  const criteria = req.query.criteria || '';
-  const encodedCriteria = encodeURIComponent(criteria);
-  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?criteria=${encodedCriteria}`;
-  await handleZohoApiRequest(apiUrl, res, 'GET');
+  const criteria = req.query.criteria || '';  // Fetch the criteria from query parameters
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
 });
 
-// Update Contact by contactId
-app.patch('/zoho/Contacts/by-id/:contactId', async (req, res) => {
-  const contactId = req.params.contactId;
+// Update Contact in Contacts module
+app.patch('/zoho/Contacts/:contactId', async (req, res) => {
+  const contactId = req.params.contactId; // Fetch the contact ID from the request parameters
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${contactId}`;
-  const updateData = req.body;
+  const updateData = req.body; // Fetch the update data from the request body
+
+  // Pass updateData as the body of the PATCH request
   await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
 });
 
-// Update Contact by crmRecid
-app.patch('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
-  const crmRecid = req.params.crmRecid;
+// Update Contact in Contacts module using crmRecid
+app.patch('/zoho/Contacts/:crmRecid', async (req, res) => {
+  const crmRecid = req.params.crmRecid; // Fetch the crmRecid from the request parameters
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
-  const updateData = req.body;
+  const updateData = req.body; // Fetch the update data from the request body
+
+  // Pass updateData as the body of the PATCH request
   await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
 });
 
-// Get Contact by crmRecid
-app.get('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
-  const crmRecid = req.params.crmRecid;
+// Get Contact in Contacts module using crmRecid
+app.get('/zoho/Contacts/:crmRecid', async (req, res) => {
+  const crmRecid = req.params.crmRecid; // Fetch the crmRecid from the request parameters
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
+
+  // Make GET request to fetch contact data
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
 // Member - Dashboard
 app.get('/zoho/Member/:mid', async (req, res) => {
-  const mid = req.params.mid;
+  const crmRecid = req.params.mid;
   const apiUrl = `https://www.zohoapis.com/crm/v7/Member/${mid}`;
-  await handleZohoApiRequest(apiUrl, res, 'GET');
+  await handleZohoApiRequest(apiUrl, res);
 });
 
+// Member - Dashboard
+app.get('/zoho/Member/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://www.zohoapis.com/crm/v7/Member/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
+
+
+
+// Dashboard - Dashboard
+app.get('/zoho/Dashboard/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://www.zohoapis.com/crm/v7/Dashboard/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
+});
 
 // Subscriptions - Subscriptions
 app.get('/zoho/Subscriptions/search', async (req, res) => {
@@ -137,18 +146,21 @@ app.get('/zoho/Subscriptions/search', async (req, res) => {
   const apiUrl = `https://www.zohoapis.com/crm/v7/Subscriptions/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
+
 // Transactions - Transactions
 app.get('/zoho/Transactions/search', async (req, res) => {
   const criteria = req.query.criteria || '';
   const apiUrl = `https://www.zohoapis.com/crm/v7/Transactions/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
+
 // Accounts module
 app.get('/zoho/Accounts/search', async (req, res) => {
   const criteria = req.query.criteria || '';
   const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
+
 // Zoho Desk module
 app.get('/zoho/Desk/search', async (req, res) => {
   const criteria = req.query.criteria || '';
@@ -156,16 +168,8 @@ app.get('/zoho/Desk/search', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res);
 });
 
-
-// Error Handling Middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
-});
-
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
