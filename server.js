@@ -9,12 +9,14 @@ let zohoRefreshToken = process.env.ZOHO_REFRESH_TOKEN;
 let clientId = process.env.ZOHO_CLIENT_ID;
 let clientSecret = process.env.ZOHO_CLIENT_SECRET;
 
-// Desk configurations
+// Zoho Desk configurations
 let deskAccessToken = '';
-let deskRefreshToken = process.env.DESK_REFRESH_TOKEN;
-let deskClientId = process.env.DESK_CLIENT_ID;
-let deskClientSecret = process.env.DESK_CLIENT_SECRET;
-let deskOrgId = process.env.ZOHO_DESK_ORG_ID;
+let deskTokenExpiry = 0; // Initialize token expiry time
+
+const deskRefreshToken = process.env.DESK_REFRESH_TOKEN;
+const deskClientId = process.env.DESK_CLIENT_ID;
+const deskClientSecret = process.env.DESK_CLIENT_SECRET;
+const deskOrgId = process.env.ZOHO_DESK_ORG_ID;
 
 // Middleware to enable CORS for all requests
 app.use(cors({
@@ -67,7 +69,7 @@ async function getDeskAccessToken() {
     }
     return deskAccessToken;
   }
-  
+
 // Function to refresh the Zoho Desk access token
 async function refreshZohoDeskToken() {
     const refreshUrl = 'https://accounts.zoho.com/oauth/v2/token';
