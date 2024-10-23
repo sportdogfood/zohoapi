@@ -9,13 +9,6 @@ let zohoRefreshToken = process.env.ZOHO_REFRESH_TOKEN;
 let clientId = process.env.ZOHO_CLIENT_ID;
 let clientSecret = process.env.ZOHO_CLIENT_SECRET;
 
-// Desk configurations
-let deskAccessToken = '';
-let deskRefreshToken = process.env.DESK_REFRESH_TOKEN;
-let deskClientId = process.env.DESK_CLIENT_ID;
-let deskClientSecret = process.env.DESK_CLIENT_SECRET;
-let deskOrgId = process.env.ZOHO_DESK_ORG_ID;
-
 // Middleware to enable CORS for all requests
 app.use(cors({
   origin: '*', // Specify specific origins in production
@@ -60,36 +53,6 @@ async function refreshZohoToken() {
   }
 }
 
-// Function to refresh the Zoho Desk access token
-async function refreshZohoDeskToken() {
-  const refreshUrl = 'https://accounts.zoho.com/oauth/v2/token';
-
-  try {
-    const response = await fetch(refreshUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: deskRefreshToken,
-        client_id: deskClientId,
-        client_secret: deskClientSecret
-      })
-    });
-
-    const data = await response.json();
-    if (data.access_token) {
-      deskAccessToken = data.access_token;
-      console.log('Zoho Desk Access Token Refreshed:', deskAccessToken);
-      return deskAccessToken;
-    } else {
-      throw new Error('Failed to refresh Zoho Desk token');
-    }
-  } catch (error) {
-    console.error('Error refreshing Zoho Desk access token:', error);
-    throw error;
-  }
-}
-
 // Helper function to handle Zoho API requests and token refresh
 async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
   try {
@@ -124,44 +87,6 @@ async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
   } catch (error) {
     console.error("Error fetching Zoho data:", error);
     res.status(500).json({ error: 'Error fetching Zoho data' });
-  }
-}
-
-// Helper function to handle Zoho Desk API requests and token refresh
-async function handleZohoDeskApiRequest(apiUrl, res, method = 'GET', body = null) {
-  try {
-    const options = {
-      method,
-      headers: { 
-        'Authorization': `Zoho-oauthtoken ${deskAccessToken}`,
-        'orgId': deskOrgId,
-        'Content-Type': 'application/json'
-      }
-    };
-    if (body) {
-      options.body = JSON.stringify(body);
-    }
-
-    let response = await fetch(apiUrl, options);
-
-    if (response.status === 401) {
-      console.log('Zoho Desk Access token expired, refreshing...');
-      await refreshZohoDeskToken();
-      options.headers['Authorization'] = `Zoho-oauthtoken ${deskAccessToken}`;
-      response = await fetch(apiUrl, options);
-    }
-
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      console.error(`Zoho Desk API Error: ${response.statusText}`, errorResponse);
-      throw new Error(`Zoho Desk API Error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error("Error fetching Zoho Desk data:", error);
-    res.status(500).json({ error: 'Error fetching Zoho Desk data' });
   }
 }
 
@@ -205,37 +130,32 @@ app.get('/zoho/Member/:mid', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
+
 // Subscriptions - Subscriptions
 app.get('/zoho/Subscriptions/search', async (req, res) => {
   const criteria = req.query.criteria || '';
   const apiUrl = `https://www.zohoapis.com/crm/v7/Subscriptions/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
-
 // Transactions - Transactions
 app.get('/zoho/Transactions/search', async (req, res) => {
   const criteria = req.query.criteria || '';
   const apiUrl = `https://www.zohoapis.com/crm/v7/Transactions/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
-
 // Accounts module
 app.get('/zoho/Accounts/search', async (req, res) => {
   const criteria = req.query.criteria || '';
   const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/search?criteria=${criteria}`;
   await handleZohoApiRequest(apiUrl, res);
 });
-
-// Zoho Desk module - Search contacts by email
-app.get('/zoho/Desk/contacts/search', async (req, res) => {
-  const email = req.query.email || '';
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
-  }
-  const encodedEmail = encodeURIComponent(email);
-  const apiUrl = `https://desk.zoho.com/api/v1/contacts/search?email=${encodedEmail}`;
-  await handleZohoDeskApiRequest(apiUrl, res, 'GET');
+// Zoho Desk module
+app.get('/zoho/Desk/search', async (req, res) => {
+  const criteria = req.query.criteria || '';
+  const apiUrl = `https://desk.zoho.com/api/v1/tickets/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
 });
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -248,3 +168,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
