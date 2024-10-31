@@ -69,6 +69,7 @@ async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
 
     let response = await fetch(apiUrl, options);
 
+    // Handle unauthorized (expired token)
     if (response.status === 401) {
       console.log('Access token expired, refreshing...');
       await refreshZohoToken();
@@ -79,14 +80,14 @@ async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
     if (!response.ok) {
       const errorResponse = await response.json();
       console.error(`Zoho API Error: ${response.statusText}`, errorResponse);
-      throw new Error(`Zoho API Error: ${response.statusText}`);
+      return res.status(response.status).json({ error: response.statusText, details: errorResponse });
     }
 
     const data = await response.json();
-    res.json(data);
+    return res.json(data);
   } catch (error) {
     console.error("Error fetching Zoho data:", error);
-    res.status(500).json({ error: 'Error fetching Zoho data' });
+    return res.status(500).json({ error: 'Error fetching Zoho data' });
   }
 }
 
@@ -102,21 +103,34 @@ app.get('/zoho/Contacts/search', async (req, res) => {
 app.patch('/zoho/Contacts/by-id/:contactId', async (req, res) => {
   const contactId = req.params.contactId;
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${contactId}`;
-  const updateData = req.body;
+  const updateData = {
+    data: [req.body] // Zoho expects data to be in an array format
+  };
   await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
 });
 
-// Update Contact by crmRecid
+// Update Contact by crmRecid (corrected)
 app.patch('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
   const crmRecid = req.params.crmRecid;
+  if (!crmRecid) {
+    return res.status(400).json({ error: 'crmRecid is required' });
+  }
+
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
-  const updateData = req.body;
+  const updateData = {
+    data: [req.body] // Zoho expects data to be in an array format
+  };
+
   await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
 });
 
 // Get Contact by crmRecid
 app.get('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
   const crmRecid = req.params.crmRecid;
+  if (!crmRecid) {
+    return res.status(400).json({ error: 'crmRecid is required' });
+  }
+
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
