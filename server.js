@@ -217,7 +217,9 @@ app.post('/zoho/coql/query', async (req, res) => {
 
   try {
     console.log('Sending COQL request to Zoho CRM with query:', JSON.stringify(coqlQuery, null, 2));
+    console.log('API URL:', apiUrl);
 
+    // Making COQL API request to Zoho
     const response = await axios.post(apiUrl, coqlQuery, {
       headers: {
         'Authorization': `Zoho-oauthtoken ${zohoAccessToken}`,
@@ -238,6 +240,7 @@ app.post('/zoho/coql/query', async (req, res) => {
     res.status(500).json({ error: 'Error executing COQL request', details: error.response ? error.response.data : error.message });
   }
 });
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
