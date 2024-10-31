@@ -99,21 +99,21 @@ app.get('/zoho/Contacts/search', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
-// Update Contact by contactId
-app.patch('/zoho/Contacts/by-id/:contactId', async (req, res) => {
-  const contactId = req.params.contactId;
-  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${contactId}`;
-  const updateData = {
-    data: [req.body] // Zoho expects data to be in an array format
-  };
-  await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
-});
-
-// Update Contact by crmRecid (corrected)
+// Update Contact by crmRecid
 app.patch('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
   const crmRecid = req.params.crmRecid;
+
   if (!crmRecid) {
     return res.status(400).json({ error: 'crmRecid is required' });
+  }
+
+  // Adding console log to see the data being patched
+  console.log('Patch request to update crmRecid:', crmRecid);
+  console.log('Request body:', req.body);
+
+  // Ensure that request body is in the correct format
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({ error: 'Invalid request body. Must be a JSON object.' });
   }
 
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
@@ -121,6 +121,19 @@ app.patch('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
     data: [req.body] // Zoho expects data to be in an array format
   };
 
+  // Adding console log for update data
+  console.log('Update data:', updateData);
+
+  await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
+});
+
+// Update Contact by contactId
+app.patch('/zoho/Contacts/by-id/:contactId', async (req, res) => {
+  const contactId = req.params.contactId;
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${contactId}`;
+  const updateData = {
+    data: [req.body] // Zoho expects data to be in an array format
+  };
   await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
 });
 
