@@ -198,6 +198,47 @@ app.get('/zoho/Accounts/search', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res);
 });
 
+
+// Route handler for '/zoho/coql/query'
+app.post('/zoho/coql/query', async (req, res) => {
+  const lastName = req.body.lastName;
+
+  if (!lastName) {
+    console.error('Last name is required for COQL query');
+    return res.status(400).json({ error: 'Last name is required' });
+  }
+
+  // Constructing the COQL query with the provided last name
+  const coqlQuery = {
+    select_query: `select Last_Name, First_Name, Foxy_Id from Contacts where (((Last_Name = '${lastName}'))) limit 1`
+  };
+
+  const apiUrl = 'https://www.zohoapis.com/crm/v2/coql';
+
+  try {
+    console.log('Sending COQL request to Zoho CRM with query:', JSON.stringify(coqlQuery, null, 2));
+
+    const response = await axios.post(apiUrl, coqlQuery, {
+      headers: {
+        'Authorization': `Zoho-oauthtoken ${zohoAccessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('COQL API call completed successfully:', response.data);
+
+    if (response.data && response.data.data) {
+      res.status(200).json({ success: true, data: response.data.data });
+    } else {
+      console.error('Unexpected response from Zoho CRM COQL:', response.status, response.data);
+      res.status(response.status).json({ error: 'No matching records found', details: response.data });
+    }
+  } catch (error) {
+    console.error('Error during COQL request:', error.message || error);
+    res.status(500).json({ error: 'Error executing COQL request', details: error.response ? error.response.data : error.message });
+  }
+});
+
 // Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
