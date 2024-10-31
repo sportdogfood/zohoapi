@@ -99,33 +99,55 @@ app.get('/zoho/Contacts/search', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
+
 // Update Contact by crmRecid
 app.patch('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
   const crmRecid = req.params.crmRecid;
 
   if (!crmRecid) {
+    console.error('CRM Record ID (crmRecid) is required');
     return res.status(400).json({ error: 'crmRecid is required' });
   }
 
-  // Adding console log to see the data being patched
+  // Logging for troubleshooting
   console.log('Patch request to update crmRecid:', crmRecid);
-  console.log('Request body:', req.body);
+  console.log('Request body received:', req.body);
 
   // Ensure that request body is in the correct format
   if (!req.body || typeof req.body !== 'object') {
+    console.error('Invalid request body. Must be a JSON object.');
     return res.status(400).json({ error: 'Invalid request body. Must be a JSON object.' });
   }
 
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmRecid}`;
   const updateData = {
-    data: [req.body] // Zoho expects data to be in an array format
+    data: [req.body] // Zoho expects 'data' to be an array containing objects representing the fields to update
   };
 
-  // Adding console log for update data
-  console.log('Update data:', updateData);
+  // Adding a clear log for the final update data
+  console.log('Update data being sent to Zoho CRM:', JSON.stringify(updateData, null, 2));
 
-  await handleZohoApiRequest(apiUrl, res, 'PATCH', updateData);
+  try {
+    const response = await axios.patch(apiUrl, updateData, {
+      headers: {
+        'Authorization': `Zoho-oauthtoken ${zohoAccessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status === 200 && response.data.data) {
+      console.log('Zoho CRM Update Response:', JSON.stringify(response.data, null, 2));
+      res.status(200).json({ success: true, message: 'Record updated successfully', data: response.data.data });
+    } else {
+      console.error('Unexpected response from Zoho CRM:', response.status, response.data);
+      res.status(response.status).json({ error: 'Failed to update the record', details: response.data });
+    }
+  } catch (error) {
+    console.error('Error during CRM PATCH request:', error.message || error);
+    res.status(500).json({ error: 'Error updating Zoho CRM data', details: error.response ? error.response.data : error.message });
+  }
 });
+
 
 // Update Contact by contactId
 app.patch('/zoho/Contacts/by-id/:contactId', async (req, res) => {
