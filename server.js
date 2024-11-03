@@ -91,6 +91,24 @@ async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
   }
 }
 
+
+// Route to test the refresh token functionality
+app.get('/test/auth', async (req, res) => {
+  try {
+    // Call the refresh function
+    await refreshZohoToken();
+
+    // Send back the updated tokens
+    res.json({
+      message: 'Zoho Access Token refreshed successfully',
+      access_token: zohoAccessToken,
+      refresh_token: zohoRefreshToken
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error refreshing Zoho access token', details: error.message });
+  }
+});
+
 // Contacts module - Search
 app.get('/zoho/Contacts/search', async (req, res) => {
   const criteria = req.query.criteria || '';
