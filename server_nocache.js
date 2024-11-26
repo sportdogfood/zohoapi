@@ -2,12 +2,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
-const axios = require('axios'); // Ensure axios is imported
-const NodeCache = require('node-cache'); // Import Node-Cache
 const app = express();
-
-// Initialize cache with default TTL (1 hour) and check period (2 minutes)
-const cache = new NodeCache({ stdTTL: 3600, checkperiod: 120 });
 
 let zohoAccessToken = '';
 let zohoRefreshToken = process.env.ZOHO_REFRESH_TOKEN;
@@ -58,22 +53,9 @@ async function refreshZohoToken() {
   }
 }
 
-// Helper function to handle Zoho API requests and token refresh with caching
+// Helper function to handle Zoho API requests and token refresh
 async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
   try {
-    // Generate a unique cache key based on method and URL
-    const cacheKey = `${method}:${apiUrl}:${body ? JSON.stringify(body) : ''}`;
-
-    // Check if response exists in cache (only for GET requests)
-    if (method === 'GET') {
-      const cachedData = cache.get(cacheKey);
-      if (cachedData) {
-        console.log(`Cache hit for key: ${cacheKey}`);
-        return res.json(cachedData);
-      }
-      console.log(`Cache miss for key: ${cacheKey}`);
-    }
-
     const options = {
       method,
       headers: { 
@@ -102,19 +84,13 @@ async function handleZohoApiRequest(apiUrl, res, method = 'GET', body = null) {
     }
 
     const data = await response.json();
-
-    // Store the response in cache if it's a GET request
-    if (method === 'GET') {
-      cache.set(cacheKey, data);
-      console.log(`Data cached for key: ${cacheKey}`);
-    }
-
     return res.json(data);
   } catch (error) {
     console.error("Error fetching Zoho data:", error);
     return res.status(500).json({ error: 'Error fetching Zoho data' });
   }
 }
+
 
 // Route to test the refresh token functionality
 app.get('/test/auth', async (req, res) => {
@@ -140,6 +116,7 @@ app.get('/zoho/Contacts/search', async (req, res) => {
   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/search?criteria=${encodedCriteria}`;
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
+
 
 // Update Contact by crmRecid
 app.patch('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
@@ -189,6 +166,7 @@ app.patch('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
   }
 });
 
+
 // Update Contact by contactId
 app.patch('/zoho/Contacts/by-id/:contactId', async (req, res) => {
   const contactId = req.params.contactId;
@@ -217,27 +195,139 @@ app.get('/zoho/Member/:mid', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
+
+// New Routes for Fetching Modules by ID
+
+// Accounts Module - Get by ID
+app.get('/zoho/Accounts/by-id/:accountId', async (req, res) => {
+  const accountId = req.params.accountId;
+  if (!accountId) {
+    return res.status(400).json({ error: 'accountId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/${accountId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Products Module - Get by ID
+app.get('/zoho/Products/by-id/:productId', async (req, res) => {
+  const productId = req.params.productId;
+  if (!productId) {
+    return res.status(400).json({ error: 'productId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Products/${productId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Leads Module - Get by ID
+app.get('/zoho/Leads/by-id/:leadId', async (req, res) => {
+  const leadId = req.params.leadId;
+  if (!leadId) {
+    return res.status(400).json({ error: 'leadId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Leads/${leadId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Member Module - Get by ID
+app.get('/zoho/Member/by-id/:memberId', async (req, res) => {
+  const memberId = req.params.memberId;
+  if (!memberId) {
+    return res.status(400).json({ error: 'memberId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Member/${memberId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Reviews Module - Get by ID
+app.get('/zoho/Reviews/by-id/:reviewId', async (req, res) => {
+  const reviewId = req.params.reviewId;
+  if (!reviewId) {
+    return res.status(400).json({ error: 'reviewId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Reviews/${reviewId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Dog_Profiles Module - Get by ID
+app.get('/zoho/Dog_Profiles/by-id/:dogProfileId', async (req, res) => {
+  const dogProfileId = req.params.dogProfileId;
+  if (!dogProfileId) {
+    return res.status(400).json({ error: 'dogProfileId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Dog_Profiles/${dogProfileId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Change_Log Module - Get by ID
+app.get('/zoho/Change_Log/by-id/:changeLogId', async (req, res) => {
+  const changeLogId = req.params.changeLogId;
+  if (!changeLogId) {
+    return res.status(400).json({ error: 'changeLogId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Change_Log/${changeLogId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Master_Items Module - Get by ID
+app.get('/zoho/Master_Items/by-id/:masterItemId', async (req, res) => {
+  const masterItemId = req.params.masterItemId;
+  if (!masterItemId) {
+    return res.status(400).json({ error: 'masterItemId is required' });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Master_Items/${masterItemId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Optionally, add the Generic Route here
+/*
+app.get('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
+  const { moduleName, recordId } = req.params;
+
+  if (!moduleName || !recordId) {
+    return res.status(400).json({ error: 'moduleName and recordId are required' });
+  }
+
+  // Validate moduleName against a list of allowed modules to prevent misuse
+  const allowedModules = ['Accounts', 'Products', 'Leads', 'Member', 'Reviews', 'Dog_Profiles', 'Change_Log', 'Master_Items'];
+  if (!allowedModules.includes(moduleName)) {
+    return res.status(400).json({ error: `Invalid module name. Allowed modules are: ${allowedModules.join(', ')}` });
+  }
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/${moduleName}/${recordId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+*/
+
+
 // Subscriptions - Subscriptions
 app.get('/zoho/Subscriptions/search', async (req, res) => {
   const criteria = req.query.criteria || '';
-  const apiUrl = `https://www.zohoapis.com/crm/v7/Subscriptions/search?criteria=${encodeURIComponent(criteria)}`;
-  await handleZohoApiRequest(apiUrl, res, 'GET');
+  const apiUrl = `https://www.zohoapis.com/crm/v7/Subscriptions/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
 });
 
 // Transactions - Transactions
 app.get('/zoho/Transactions/search', async (req, res) => {
   const criteria = req.query.criteria || '';
-  const apiUrl = `https://www.zohoapis.com/crm/v7/Transactions/search?criteria=${encodeURIComponent(criteria)}`;
-  await handleZohoApiRequest(apiUrl, res, 'GET');
+  const apiUrl = `https://www.zohoapis.com/crm/v7/Transactions/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
 });
 
 // Accounts module
 app.get('/zoho/Accounts/search', async (req, res) => {
   const criteria = req.query.criteria || '';
-  const encodedCriteria = encodeURIComponent(criteria);
-  const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/search?criteria=${encodedCriteria}`;
-  await handleZohoApiRequest(apiUrl, res, 'GET');
+  const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/search?criteria=${criteria}`;
+  await handleZohoApiRequest(apiUrl, res);
 });
+
 
 // Route handler for '/zoho/coql/query'
 app.post('/zoho/coql/query', async (req, res) => {
@@ -281,25 +371,6 @@ app.post('/zoho/coql/query', async (req, res) => {
   }
 });
 
-// New Routes for Fetching Modules by ID
-
-// Generic Module Get by ID Route
-app.get('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
-  const { moduleName, recordId } = req.params;
-
-  if (!moduleName || !recordId) {
-    return res.status(400).json({ error: 'moduleName and recordId are required' });
-  }
-
-  // Validate moduleName against a list of allowed modules to prevent misuse
-  const allowedModules = ['Accounts', 'Products', 'Leads', 'Member', 'Reviews', 'Dog_Profiles', 'Change_Log', 'Master_Items'];
-  if (!allowedModules.includes(moduleName)) {
-    return res.status(400).json({ error: `Invalid module name. Allowed modules are: ${allowedModules.join(', ')}` });
-  }
-
-  const apiUrl = `https://www.zohoapis.com/crm/v2/${moduleName}/${recordId}`;
-  await handleZohoApiRequest(apiUrl, res, 'GET');
-});
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

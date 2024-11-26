@@ -39,6 +39,7 @@
     "http-proxy": "^1.18.1",
     "http-proxy-middleware": "^2.0.6",
     "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
     "node-fetch": "^2.7.0",
     "proxy-from-env": "0.0.1"
   },
