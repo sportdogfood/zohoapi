@@ -1,23 +1,14 @@
 {
-  "name": "cors-anywhere",
-  "version": "0.4.4",
-  "description": "CORS Anywhere is a reverse proxy which adds CORS headers to the proxied request. Request URL is taken from the path",
-  "license": "MIT",
-  "author": "Rob Wu <rob@robwu.nl>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Rob--W/cors-anywhere.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Rob--W/cors-anywhere/issues/",
-    "email": "rob@robwu.nl"
-  },
+  "name": "zohoapi",
+  "version": "1.0.0",
+  "description": "API proxy for Zoho integration on Heroku",
   "keywords": [
     "cors",
     "cross-domain",
     "http-proxy",
     "proxy",
-    "heroku"
+    "heroku",
+    "zoho"
   ],
   "main": "server.js",
   "files": [
@@ -34,6 +25,7 @@
     "test-coverage": "istanbul cover ./node_modules/.bin/_mocha -- test/test.js test/test-ratelimit.js --reporter spec"
   },
   "dependencies": {
+    "axios": "^1.7.8",
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "http-proxy": "^1.18.1",
@@ -41,18 +33,18 @@
     "morgan": "^1.10.0",
     "node-cache": "^5.1.2",
     "node-fetch": "^2.7.0",
-    "proxy-from-env": "0.0.1"
+    "proxy-from-env": "^0.0.1"
   },
   "devDependencies": {
-    "coveralls": "^2.11.6",
-    "eslint": "^2.2.0",
+    "coveralls": "^3.0.11",
+    "eslint": "^8.50.0",
     "istanbul": "^0.4.2",
-    "lolex": "^1.5.0",
-    "mocha": "^3.4.2",
-    "nock": "^8.2.1",
-    "supertest": "^2.0.1"
+    "lolex": "^5.1.2",
+    "mocha": "^10.2.0",
+    "nock": "^13.3.1",
+    "supertest": "^6.3.3"
   },
   "engines": {
-    "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+    "node": ">=18.18.0 <22"
   }
 }
