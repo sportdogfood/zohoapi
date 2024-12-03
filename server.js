@@ -210,6 +210,28 @@ app.get('/zoho/Contacts/by-crmRecid/:crmRecid', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
+// Get Account by acctRecid
+app.get('/zoho/Accounts/by-acctId/:acctId', async (req, res) => {
+  const acctId = req.params.acctId;
+  if (!acctId) {
+    return res.status(400).json({ error: 'acctId is required' });
+  }
+
+   const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/${acctId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Get Account by crmRecid
+app.get('/zoho/Contacts/by-crmId/:crmId', async (req, res) => {
+  const crmId = req.params.crmId;
+  if (!crmId) {
+    return res.status(400).json({ error: 'crmId is required' });
+  }
+
+   const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/${crmId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
 // Member - Dashboard
 app.get('/zoho/Member/:mid', async (req, res) => {
   const mid = req.params.mid;

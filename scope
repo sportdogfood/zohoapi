@@ -1,0 +1,49 @@
+
+ZOHO_CLIENT_ID=1000.2YLG03XV2KBY0309IG7V5F8BGDQ2MD
+ZOHO_CLIENT_SECRET=1c11e1eb44688b4b05e221a2cb83196e5813b5eaad
+
+
+
+
+https://accounts.zoho.com/oauth/v2/auth
+?scope=ZohoCRM.users.READ,ZohoCRM.org.READ,ZohoCRM.settings.READ,ZohoCRM.modules.ALL,ZohoCRM.coql.READ,ZohoCRM.bulk.ALL
+&client_id=1000.2YLG03XV2KBY0309IG7V5F8BGDQ2MD
+&response_type=code
+&access_type=offline
+&redirect_uri=https://www.sportdogfood.com/consent
+&prompt=consent
+
+https://www.sportdogfood.com/consent?code=1000.33769aa705a2615668bc0a504fdbcb78.d5b1794bea1ed4f78c5f1104238099d9&location=us&accounts-server=https%3A%2F%2Faccounts.zoho.com&
+
+
+
+
+
+# Define Variables
+$clientId = "1000.2YLG03XV2KBY0309IG7V5F8BGDQ2MD"
+$clientSecret = "1c11e1eb44688b4b05e221a2cb83196e5813b5eaad"
+$authorizationCode = "1000.33769aa705a2615668bc0a504fdbcb78.d5b1794bea1ed4f78c5f1104238099d9"
+$redirectUri = "https://www.sportdogfood.com/consent"
+$tokenUrl = "https://accounts.zoho.com/oauth/v2/token"
+
+# Define request body
+$body = @{
+    code = $authorizationCode
+    redirect_uri = $redirectUri
+    client_id = $clientId
+    client_secret = $clientSecret
+    grant_type = "authorization_code"
+}
+
+# Make the POST request to get the access token
+$response = Invoke-RestMethod -Uri $tokenUrl -Method Post -ContentType "application/x-www-form-urlencoded" -Body $body
+
+# Display the response
+$response
+
+access_token  : 1000.9497bdd42bdfeb5994b047e31157c0ae.3c220dae44675f5cc9d089c55de39aaf
+refresh_token : 1000.a95c1144f52e9cf2ed11a93eb391fcd5.fa0c6e2e0780f29f4fca2857ef62f252
+scope         : ZohoCRM.users.READ ZohoCRM.org.READ ZohoCRM.settings.READ ZohoCRM.modules.ALL ZohoCRM.coql.READ ZohoCRM.bulk.ALL
+api_domain    : https://www.zohoapis.com
+token_type    : Bearer
+expires_in    : 3600
