@@ -221,14 +221,25 @@ app.get('/zoho/Accounts/by-acctId/:acctId', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
-// Get Account by crmRecid
+// Get Customers by crmRecid
+app.get('/zoho/Customers/by-crmId/:crmId', async (req, res) => {
+  const crmId = req.params.crmId;
+  if (!crmId) {
+    return res.status(400).json({ error: 'crmId is required' });
+  }
+
+   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmId}`;
+  await handleZohoApiRequest(apiUrl, res, 'GET');
+});
+
+// Get Contacts by crmRecid
 app.get('/zoho/Contacts/by-crmId/:crmId', async (req, res) => {
   const crmId = req.params.crmId;
   if (!crmId) {
     return res.status(400).json({ error: 'crmId is required' });
   }
 
-   const apiUrl = `https://www.zohoapis.com/crm/v2/Accounts/${crmId}`;
+   const apiUrl = `https://www.zohoapis.com/crm/v2/Contacts/${crmId}`;
   await handleZohoApiRequest(apiUrl, res, 'GET');
 });
 
