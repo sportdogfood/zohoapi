@@ -338,8 +338,10 @@ app.get('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
     return res.status(400).json({ error: 'moduleName and recordId are required' });
   }
 
-  // Validate moduleName against a list of allowed modules to prevent misuse
-  const allowedModules = ['Accounts', 'Threads', 'Products', 'Leads', 'Member', 'Reviews', 'Dog_Profiles', 'Change_Log', 'Master_Items'];
+  // Validate moduleName against a list of allowed modules to prevent misuse 
+
+  const allowedModules = ['Accounts','Addresses','Attributes','Brands','Breeds','Cards','Cart-Items','Carts','Cases','Compares','Coupons','Customers','Dashboards','Discounts','Dogs','Galleries','Invoice-Activity','Invoices','Item-Activity','Landings','Ledgers','Levels','Package-Activity','Packages','Packs','Payments','Personas','PersonaStates','Points','Polls','Posts','Potentials','Products','Redemptions','Reviews','Rewards','Shipment-Activity','Shipment-Items','Shipments','States','StatesZip3','Subscription-Activity','Subscriptions','Tasks','Threads','Thrive','Tlds','Transaction-Activity','Transaction-Items','Transactions','Trigger-Activity','Warehouses','Zips','Zoom','Zoom-Activity'
+];
   if (!allowedModules.includes(moduleName)) {
     return res.status(400).json({ error: `Invalid module name. Allowed modules are: ${allowedModules.join(', ')}` });
   }
