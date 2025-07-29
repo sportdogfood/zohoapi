@@ -320,7 +320,7 @@ app.post('/zoho/:module', async (req, res) => {
   const payload    = { data: [ req.body ] };         // Zoho expects an array under `data`
 
   // optional: validate moduleName against whitelist
-  const allowed = ['Contacts','Deals','Accounts','Products'];
+  const allowed = ['Contacts','Deals','Accounts','Products', 'Leads', 'Threads'];
   if (!allowed.includes(moduleName)) {
     return res.status(400).json({ error: `Invalid module: ${moduleName}` });
   }
@@ -328,24 +328,6 @@ app.post('/zoho/:module', async (req, res) => {
   // Use your helper to handle token refresh / caching / error‐formatting
   await handleZohoApiRequest(apiUrl, res, 'POST', payload);
 });
-
-// New Routes for Fetching Modules by ID
-app.post('/zoho/:module', async (req, res) => {
-  const moduleName = req.params.module;              // e.g. "Contacts", "Deals", "Leads", etc.
-  const apiUrl     = `https://www.zohoapis.com/crm/v2/${moduleName}`;
-  const payload    = { data: [ req.body ] };         // Zoho expects an array under `data`
-
-  // optional: validate moduleName against whitelist
-  const allowed = ['Threads','Leads'];
-  if (!allowed.includes(moduleName)) {
-    return res.status(400).json({ error: `Invalid module: ${moduleName}` });
-  }
-
-  // Use your helper to handle token refresh / caching / error‐formatting
-  await handleZohoApiRequest(apiUrl, res, 'POST', payload);
-});
-
-
 
 
 // Error Handling Middleware
