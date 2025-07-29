@@ -339,13 +339,13 @@ app.get('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
   }
 
   // Only allow known modules
-  const allowedModules = [
+  const allowedModules = [ 'Threads', 
     'Accounts', 'Addresses', 'CustomModule48', 'Attributes', 'Brands', 'Breeds', 'Cards', 'Cart-Items', 'Carts',
     'Cases', 'Compares', 'Coupons', 'Customers', 'Dashboards', 'Discounts', 'Dogs', 'Galleries',
     'Invoice-Activity', 'Invoices', 'Item-Activity', 'Landings', 'Ledgers', 'Levels', 'Package-Activity',
     'Packages', 'Packs', 'Payments', 'Personas', 'PersonaStates', 'Points', 'Polls', 'Posts', 'Potentials',
     'Products', 'Redemptions', 'Reviews', 'Rewards', 'Shipment-Activity', 'Shipment-Items', 'Shipments',
-    'States', 'StatesZip3', 'Subscription-Activity', 'Subscriptions', 'Tasks', 'Threads', 'Thrive', 'Tlds',
+    'States', 'StatesZip3', 'Subscription-Activity', 'Subscriptions', 'Tasks', 'Thrive', 'Tlds',
     'Transaction-Activity', 'Transaction-Items', 'Transactions', 'Trigger-Activity', 'Warehouses', 'Zips',
     'Zoom', 'Zoom-Activity'
   ];
