@@ -332,7 +332,7 @@ app.post('/zoho/:module', async (req, res) => {
 // Dedicated POST route for Threads (handles aliasing automatically)
 app.post('/zoho/Threads', async (req, res) => {
   // Map to the true Zoho API name for POSTs
-  const zohoApiModule = 'CustomModule48'; // <-- Use your /settings/modules API_NAME if needed!
+  const zohoApiModule = 'Threads'; // <-- Use your /settings/modules API_NAME if needed!
 
   // Zoho expects data as an array under the 'data' key
   const payload = { data: [ req.body ] };
@@ -356,7 +356,7 @@ app.post('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
   }
 
   // Only allow known modules
-  const allowedModules = [ 'Threads', 
+  const allowedModules = [ 
     'Accounts', 'Addresses', 'CustomModule48', 'Attributes', 'Brands', 'Breeds', 'Cards', 'Cart-Items', 'Carts',
     'Cases', 'Compares', 'Coupons', 'Customers', 'Dashboards', 'Discounts', 'Dogs', 'Galleries',
     'Invoice-Activity', 'Invoices', 'Item-Activity', 'Landings', 'Ledgers', 'Levels', 'Package-Activity',
