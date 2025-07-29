@@ -329,9 +329,26 @@ app.post('/zoho/:module', async (req, res) => {
   await handleZohoApiRequest(apiUrl, res, 'POST', payload);
 });
 // New Routes for Fetching Modules by ID
+// Dedicated POST route for Threads (handles aliasing automatically)
+app.post('/zoho/Threads', async (req, res) => {
+  // Map to the true Zoho API name for POSTs
+  const zohoApiModule = 'CustomModule48'; // <-- Use your /settings/modules API_NAME if needed!
+
+  // Zoho expects data as an array under the 'data' key
+  const payload = { data: [ req.body ] };
+
+  const apiUrl = `https://www.zohoapis.com/crm/v2/${zohoApiModule}`;
+
+  try {
+    await handleZohoApiRequest(apiUrl, res, 'POST', payload);
+  } catch (err) {
+    console.error('[Threads POST Route] Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Generic Module Get by ID Route
-app.get('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
+app.post('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
   const { moduleName, recordId } = req.params;
 
   if (!moduleName || !recordId) {
