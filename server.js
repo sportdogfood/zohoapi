@@ -320,7 +320,7 @@ app.post('/zoho/:module', async (req, res) => {
   const payload    = { data: [ req.body ] };         // Zoho expects an array under `data`
 
   // optional: validate moduleName against whitelist
-  const allowed = ['Contacts','Leads','Deals','Accounts','Products'];
+  const allowed = ['Contacts','Deals','Accounts','Products'];
   if (!allowed.includes(moduleName)) {
     return res.status(400).json({ error: `Invalid module: ${moduleName}` });
   }
@@ -328,23 +328,21 @@ app.post('/zoho/:module', async (req, res) => {
   // Use your helper to handle token refresh / caching / error‐formatting
   await handleZohoApiRequest(apiUrl, res, 'POST', payload);
 });
+
 // New Routes for Fetching Modules by ID
-// Dedicated POST route for Threads (handles aliasing automatically)
-app.post('/zoho/Threads', async (req, res) => {
-  // Map to the true Zoho API name for POSTs
-  const zohoApiModule = 'Threads'; // <-- Use your /settings/modules API_NAME if needed!
+app.post('/zoho/:module', async (req, res) => {
+  const moduleName = req.params.module;              // e.g. "Contacts", "Deals", "Leads", etc.
+  const apiUrl     = `https://www.zohoapis.com/crm/v2/${moduleName}`;
+  const payload    = { data: [ req.body ] };         // Zoho expects an array under `data`
 
-  // Zoho expects data as an array under the 'data' key
-  const payload = { data: [ req.body ] };
-
-  const apiUrl = `https://www.zohoapis.com/crm/v2/${zohoApiModule}`;
-
-  try {
-    await handleZohoApiRequest(apiUrl, res, 'POST', payload);
-  } catch (err) {
-    console.error('[Threads POST Route] Error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+  // optional: validate moduleName against whitelist
+  const allowed = ['Threads','Leads'];
+  if (!allowed.includes(moduleName)) {
+    return res.status(400).json({ error: `Invalid module: ${moduleName}` });
   }
+
+  // Use your helper to handle token refresh / caching / error‐formatting
+  await handleZohoApiRequest(apiUrl, res, 'POST', payload);
 });
 
 
