@@ -347,35 +347,7 @@ app.post('/zoho/Threads', async (req, res) => {
   }
 });
 
-// Generic Module Get by ID Route
-app.post('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
-  const { moduleName, recordId } = req.params;
 
-  if (!moduleName || !recordId) {
-    return res.status(400).json({ error: 'moduleName and recordId are required' });
-  }
-
-  // Only allow known modules
-  const allowedModules = [ 
-    'Accounts', 'Addresses', 'CustomModule48', 'Attributes', 'Brands', 'Breeds', 'Cards', 'Cart-Items', 'Carts',
-    'Cases', 'Compares', 'Coupons', 'Customers', 'Dashboards', 'Discounts', 'Dogs', 'Galleries',
-    'Invoice-Activity', 'Invoices', 'Item-Activity', 'Landings', 'Ledgers', 'Levels', 'Package-Activity',
-    'Packages', 'Packs', 'Payments', 'Personas', 'PersonaStates', 'Points', 'Polls', 'Posts', 'Potentials',
-    'Products', 'Redemptions', 'Reviews', 'Rewards', 'Shipment-Activity', 'Shipment-Items', 'Shipments',
-    'States', 'StatesZip3', 'Subscription-Activity', 'Subscriptions', 'Tasks', 'Thrive', 'Tlds',
-    'Transaction-Activity', 'Transaction-Items', 'Transactions', 'Trigger-Activity', 'Warehouses', 'Zips',
-    'Zoom', 'Zoom-Activity'
-  ];
-
-  if (!allowedModules.includes(moduleName)) {
-    return res.status(400).json({
-      error: `Invalid module name. Allowed modules: ${allowedModules.join(', ')}`
-    });
-  }
-
-  const apiUrl = `https://www.zohoapis.com/crm/v2/${moduleName}/${recordId}`;
-  await handleZohoApiRequest(apiUrl, res, 'GET');
-});
 
 
 // Error Handling Middleware
