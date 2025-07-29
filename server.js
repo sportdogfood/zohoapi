@@ -339,7 +339,7 @@ app.get('/zoho/:moduleName/by-id/:recordId', async (req, res) => {
   }
 
   // Validate moduleName against a list of allowed modules to prevent misuse
-  const allowedModules = ['Accounts', 'Products', 'Leads', 'Member', 'Reviews', 'Dog_Profiles', 'Change_Log', 'Master_Items'];
+  const allowedModules = ['Accounts', 'Threads', 'Products', 'Leads', 'Member', 'Reviews', 'Dog_Profiles', 'Change_Log', 'Master_Items'];
   if (!allowedModules.includes(moduleName)) {
     return res.status(400).json({ error: `Invalid module name. Allowed modules are: ${allowedModules.join(', ')}` });
   }
